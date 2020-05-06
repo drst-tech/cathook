@@ -114,7 +114,7 @@ float cur_proj_grav{ 0.0f };
 
 bool shouldBacktrack()
 {
-    return *enable && !projectile_mode && (*backtrackAimbot || force_backtrack_aimbot) && g_IBacktrack.isBacktrackEnabled;
+    return *enable && !projectile_mode && (*backtrackAimbot || force_backtrack_aimbot) && hacks::tf2::backtrack::backtrack.isBacktrackEnabled;
 }
 
 bool IsBacktracking()
@@ -557,7 +557,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                 else
                 {
                     // This does vischecks and everything
-                    auto data = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                    auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
                     // No data found
                     if (!data)
                         return false;
@@ -677,7 +677,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (shouldBacktrack())
             {
                 // This does vischecks and everything
-                auto data = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
                 // No data found
                 if (!data)
                     return false;
@@ -795,7 +795,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (shouldBacktrack())
             {
                 // This does vischecks and everything
-                auto data = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
                 // No data found
                 if (!data)
                     return false;
@@ -841,7 +841,7 @@ void Aim(CachedEntity *entity)
         if (shouldBacktrack() && entity->m_Type() == ENTITY_PLAYER)
         {
             // This does vischecks and everything
-            auto data    = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+            auto data    = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
             auto bt_hb   = data->hitboxes.at(cd.hitbox);
             hitboxcenter = bt_hb.center;
             hitboxmin    = bt_hb.min;
@@ -894,9 +894,9 @@ void Aim(CachedEntity *entity)
     // Set Backtrack data
     if (shouldBacktrack() && entity->m_Type() == ENTITY_PLAYER)
     {
-        auto data = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
         if (data)
-            g_IBacktrack.SetBacktrackData(entity, *data);
+            hacks::tf2::backtrack::backtrack.SetBacktrackData(entity, *data);
     }
     // Finish function
     return;
@@ -1058,7 +1058,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     }
     else
     {
-        auto data = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
         if (data)
         {
             result          = data->hitboxes.at(cd.hitbox).center;
@@ -1193,7 +1193,7 @@ int BestHitbox(CachedEntity *target)
         // Backtracking and preferred hitbox
         if (IsBacktracking())
         {
-            auto data = g_IBacktrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+            auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
 
             if (data)
             {
@@ -1216,7 +1216,7 @@ int BestHitbox(CachedEntity *target)
             // We already vischecked
             if (!*backtrackVischeckAll)
             {
-                auto data = g_IBacktrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
 
                 for (int i = 0; i < 18; i++)
                     if (IsEntityVectorVisible(target, (*data).hitboxes.at(i).center))
@@ -1293,7 +1293,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     }
     else
     {
-        auto data = g_IBacktrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
         if (data && IsEntityVectorVisible(entity, data->hitboxes.at(cd.hitbox == -1 ? 0 : cd.hitbox).center, MASK_SHOT))
             cd.visible = true;
         else
@@ -1488,7 +1488,7 @@ void rvarCallback(settings::VariableBase<float> &, float after)
     force_backtrack_aimbot = after >= 200.0f;
 }
 static InitRoutine EC([]() {
-    g_IBacktrack.latency.installChangeCallback(rvarCallback);
+    hacks::tf2::backtrack::backtrack.latency.installChangeCallback(rvarCallback);
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "CM_Aimbot", EC::late);

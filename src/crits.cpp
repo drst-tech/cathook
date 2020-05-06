@@ -368,9 +368,9 @@ void force_crit()
                 if (ent)
                     distance = ent->m_flDistance();
                 // Backtrack case
-                if (g_IBacktrack.isBacktrackEnabled && ent)
+                if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled && ent)
                 {
-                    auto data = g_IBacktrack.getClosestTick(LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultEntFilter, &g_IBacktrack, std::placeholders::_1), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                    auto data = hacks::tf2::backtrack::backtrack.getClosestTick(LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultEntFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
                     // No entity
                     if (!data)
                         distance = FLT_MAX;
