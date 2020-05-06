@@ -20,7 +20,7 @@ float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
 
-std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool fov_check, float range)
+std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool demoknight_mode, float range)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
@@ -48,8 +48,17 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
                 continue;
             float scr = ent->m_flDistance();
+            if (g_IBacktrack.isBacktrackEnabled && demoknight_mode)
+            {
+                auto data = g_IBacktrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                // No entity
+                if (!data)
+                    scr = FLT_MAX;
+                else
+                    scr = (*data).m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin());
+            }
             // Demoknight
-            if (fov_check)
+            if (demoknight_mode)
             {
                 if (scr >= range)
                     continue;
@@ -91,8 +100,17 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
         if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
             continue;
         float scr = ent->m_flDistance();
+        if (g_IBacktrack.isBacktrackEnabled && demoknight_mode)
+        {
+            auto data = g_IBacktrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+            // No entity
+            if (!data)
+                scr = FLT_MAX;
+            else
+                scr = (*data).m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin());
+        }
         // Demoknight
-        if (fov_check)
+        if (demoknight_mode)
         {
             if (scr >= range)
                 continue;
@@ -234,6 +252,14 @@ static void ChargeAimbot()
     CachedEntity *bestent = result.first;
     if (bestent && result.second.IsValid())
     {
+        if (g_IBacktrack.isBacktrackEnabled)
+        {
+            auto data = g_IBacktrack.getClosestEntTick(result.first, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+            // No backtrack data
+            if (!data)
+                return;
+            result.second = (*data).hitboxes.at(1).center;
+        }
         Vector tr = result.second - g_pLocalPlayer->v_Eye;
         Vector angles;
         VectorAngles(tr, angles);

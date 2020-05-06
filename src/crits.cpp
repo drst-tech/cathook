@@ -362,36 +362,25 @@ void force_crit()
             // Code for handling when to not crit with melee weapons
             else if (force_no_crit && !force_crit_this_tick)
             {
-                if (hacks::shared::backtrack::isBacktrackEnabled)
+                // Distance check
+                auto ent       = getClosestEntity(LOCAL_E->m_vecOrigin());
+                float distance = 0.0f;
+                if (ent)
+                    distance = ent->m_flDistance();
+                // Backtrack case
+                if (g_IBacktrack.isBacktrackEnabled && ent)
                 {
-                    int target = hacks::shared::backtrack::iBestTarget;
-                    // Valid backtrack target
-                    if (target > 1)
-                    {
-                        // Closest tick for melee
-                        int besttick = hacks::shared::backtrack::BestTick;
-                        // Out of range, don't crit
-                        if (hacks::shared::backtrack::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-                        {
-                            prevent_crit();
-                            return;
-                        }
-                    }
+                    auto data = g_IBacktrack.getClosestTick(LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultEntFilter, &g_IBacktrack, std::placeholders::_1), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                    // No entity
+                    if (!data)
+                        distance = FLT_MAX;
                     else
-                    {
-                        prevent_crit();
-                        return;
-                    }
+                        distance = (*data).second.m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin());
                 }
-                // Normal check, get closest entity and check distance
-                else
+                if (!ent || distance >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
                 {
-                    auto ent = getClosestEntity(LOCAL_E->m_vecOrigin());
-                    if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-                    {
-                        prevent_crit();
-                        return;
-                    }
+                    prevent_crit();
+                    return;
                 }
             }
             current_late_user_cmd->command_number = next_crit;
@@ -520,10 +509,6 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
-        return;
-    auto addr = ch->GetRemoteAddress();
-    // Local server needs no fixing
-    if (addr.type == NA_LOOPBACK)
         return;
 
     static int last_weapon;
