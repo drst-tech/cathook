@@ -128,6 +128,25 @@ static bool CarryingHeatmaker()
     return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 752;
 }
 
+// Backtrack filter for aimbot
+bool aimbotTickFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData tick)
+{
+    // Not hitscan, no vischeck needed
+    if (g_pLocalPlayer->weapon_mode != weapon_hitscan)
+        return true;
+    // FOV check
+    if (*fov > 0.0f)
+    {
+        Vector to_check = tick.m_vecOrigin;
+        to_check.z      = g_pLocalPlayer->v_Eye.z;
+        float fov_scr   = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, to_check);
+        // Failed FOV check
+        if (fov_scr > *fov)
+            return false;
+    }
+    // Return visibility
+    return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, MASK_SHOT);
+}
 static void doAutoZoom(bool target_found)
 {
     bool isIdle = target_found ? false : hacks::shared::followbot::isIdle();
@@ -486,7 +505,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                 case 4: // Distance Priority (Furthest Away)
                     scr = calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
                     break;
-                case 6: // Health Priority (Highest)
+                case 5: // Health Priority (Highest)
                     scr = ent->m_iHealth() * 4;
                     break;
                 default:
@@ -557,7 +576,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                 else
                 {
                     // This does vischecks and everything
-                    auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+                    auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
                     // No data found
                     if (!data)
                         return false;
@@ -677,7 +696,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (shouldBacktrack())
             {
                 // This does vischecks and everything
-                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
                 // No data found
                 if (!data)
                     return false;
@@ -795,7 +814,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (shouldBacktrack())
             {
                 // This does vischecks and everything
-                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
                 // No data found
                 if (!data)
                     return false;
@@ -841,7 +860,7 @@ void Aim(CachedEntity *entity)
         if (shouldBacktrack() && entity->m_Type() == ENTITY_PLAYER)
         {
             // This does vischecks and everything
-            auto data    = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+            auto data    = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
             auto bt_hb   = data->hitboxes.at(cd.hitbox);
             hitboxcenter = bt_hb.center;
             hitboxmin    = bt_hb.min;
@@ -894,7 +913,7 @@ void Aim(CachedEntity *entity)
     // Set Backtrack data
     if (shouldBacktrack() && entity->m_Type() == ENTITY_PLAYER)
     {
-        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
         if (data)
             hacks::tf2::backtrack::backtrack.SetBacktrackData(entity, *data);
     }
@@ -1058,7 +1077,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     }
     else
     {
-        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
         if (data)
         {
             result          = data->hitboxes.at(cd.hitbox).center;
@@ -1073,7 +1092,6 @@ const Vector &PredictEntity(CachedEntity *entity)
 // A function to find the best hitbox for a target
 int BestHitbox(CachedEntity *target)
 {
-
     // Switch based apon the hitbox mode set by the user
     switch (*hitbox_mode)
     {
@@ -1193,7 +1211,7 @@ int BestHitbox(CachedEntity *target)
         // Backtracking and preferred hitbox
         if (IsBacktracking())
         {
-            auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+            auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
 
             if (data)
             {
@@ -1216,7 +1234,7 @@ int BestHitbox(CachedEntity *target)
             // We already vischecked
             if (!*backtrackVischeckAll)
             {
-                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(target, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
 
                 for (int i = 0; i < 18; i++)
                     if (IsEntityVectorVisible(target, (*data).hitboxes.at(i).center))
@@ -1293,7 +1311,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     }
     else
     {
-        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
+        auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
         if (data && IsEntityVectorVisible(entity, data->hitboxes.at(cd.hitbox == -1 ? 0 : cd.hitbox).center, MASK_SHOT))
             cd.visible = true;
         else
