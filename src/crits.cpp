@@ -310,7 +310,7 @@ void force_crit()
     if (!isEnabled() && !preventCrits())
         return;
     // Can't crit
-    if (!added_per_shot)
+    if (!added_per_shot || !getCritCap(RAW_ENT(LOCAL_W)))
         return;
 
     // Reset force ticks
@@ -601,7 +601,7 @@ void CreateMove()
     IClientEntity *weapon = RAW_ENT(LOCAL_W);
     if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
         return;
-    if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon) || !added_per_shot)
+    if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon) || !added_per_shot || !getCritCap(weapon))
         return;
     if (!re::C_TFWeaponBase::CanFireCriticalShot(weapon, false, nullptr))
         return;
@@ -720,7 +720,7 @@ void Draw()
                 AddCritString("Forcing Crits!", colors::red);
 
             // Weapon can't randomly crit
-            if (!re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr) || !added_per_shot)
+            if (!re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr) || !added_per_shot || !getCritCap(wep))
             {
                 AddCritString("Weapon cannot randomly crit.", colors::red);
                 DrawCritStrings();
@@ -760,7 +760,7 @@ void Draw()
         if (draw_meter)
         {
             // Can crit?
-            if (re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr) && added_per_shot)
+            if (re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr) && added_per_shot && getCritCap(wep))
             {
                 rgba_t bucket_color = colors::FromRGBA8(0x53, 0xbc, 0x31, 255);
                 // Forcing crits, change crit bucket color to a nice azure blue
